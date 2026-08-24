@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { useAuth } from "./AuthContext";
 import { useLocale } from "@/i18n/LocaleContext";
 import { ui, format } from "@/i18n/ui";
@@ -8,6 +9,15 @@ import { ui, format } from "@/i18n/ui";
 export function AuthWidget() {
   const { session, loading, configured, signInWithEmail, signInWithGoogle, signOut } = useAuth();
   const { t } = useLocale();
+  const router = useRouter();
+
+  async function handleSignOut() {
+    await signOut();
+    // Otherwise a signed-out checklist page falls back to whatever's in the
+    // URL (often nothing), showing a confusing near-empty checklist instead
+    // of a clean slate.
+    router.push("/");
+  }
   const [email, setEmail] = useState("");
   const [sent, setSent] = useState(false);
   const [sending, setSending] = useState(false);
@@ -26,7 +36,7 @@ export function AuthWidget() {
       <div className="no-print flex flex-wrap items-center gap-3 text-sm text-slate-600 dark:text-slate-300">
         <span>{format(t(ui.signedInAs), { email: session.user.email ?? "" })}</span>
         <button
-          onClick={() => signOut()}
+          onClick={handleSignOut}
           className="font-medium text-teal-700 hover:text-teal-800 dark:text-teal-400 dark:hover:text-teal-300"
         >
           {t(ui.signOut)}

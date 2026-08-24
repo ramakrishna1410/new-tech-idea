@@ -5,6 +5,7 @@ import { useLocale } from "@/i18n/LocaleContext";
 import { LanguageToggle } from "@/i18n/LanguageToggle";
 import { ui } from "@/i18n/ui";
 import { useAuth } from "@/auth/AuthContext";
+import { AuthWidget } from "@/auth/AuthWidget";
 
 export default function Home() {
   const { t } = useLocale();
@@ -12,7 +13,8 @@ export default function Home() {
 
   return (
     <main className="mx-auto flex min-h-screen max-w-2xl flex-col justify-center px-6 py-16">
-      <div className="mb-8 flex justify-end">
+      <div className="mb-8 flex flex-wrap items-start justify-between gap-3">
+        <AuthWidget />
         <LanguageToggle />
       </div>
       <p className="text-sm font-medium text-teal-700 dark:text-teal-400">{t(ui.tagline)}</p>

@@ -1,6 +1,11 @@
 import type { Answers } from "./intakeQuestions";
 import type { LocalizedText } from "@/i18n/types";
 
+export interface NumericRange {
+  min: number;
+  max: number;
+}
+
 export interface Task {
   id: string;
   title: LocalizedText;
@@ -8,6 +13,10 @@ export interface Task {
   documents: LocalizedText[];
   fee: LocalizedText;
   timeline: LocalizedText;
+  /** Rough fee range in rupees, for the cost estimate summary — 0/0 when free. */
+  feeRupees: NumericRange;
+  /** Rough timeline range in days, for the cost/time estimate summary. */
+  timelineDays: NumericRange;
   portalUrl?: string;
   portalLabel?: LocalizedText;
   instructions: LocalizedText;
@@ -41,6 +50,8 @@ export const tasks: Task[] = [
       en: "Same day to a few days if registered promptly",
       ta: "உடனடியாக பதிவு செய்தால் அன்றே முதல் சில நாட்கள் வரை",
     },
+    feeRupees: { min: 0, max: 100 },
+    timelineDays: { min: 1, max: 5 },
     portalUrl: "https://tnreginet.gov.in/",
     portalLabel: { en: "TN Registration Dept. / e-Sevai", ta: "தமிழ்நாடு பதிவுத் துறை / இ-சேவை" },
     instructions: {
@@ -69,6 +80,8 @@ export const tasks: Task[] = [
     ],
     fee: { en: "Nominal fee, varies by taluk", ta: "சிறிய கட்டணம், வட்டத்திற்கு வட்டம் மாறுபடும்" },
     timeline: { en: "15-30 days", ta: "15-30 நாட்கள்" },
+    feeRupees: { min: 20, max: 100 },
+    timelineDays: { min: 15, max: 30 },
     portalUrl: "https://www.tnesevai.tn.gov.in/",
     portalLabel: { en: "TN e-Sevai portal", ta: "தமிழ்நாடு இ-சேவை போர்டல்" },
     instructions: {
@@ -96,6 +109,8 @@ export const tasks: Task[] = [
     ],
     fee: { en: "Varies; check with the Taluk office", ta: "மாறுபடும்; வட்டாட்சியர் அலுவலகத்தில் உறுதி செய்யவும்" },
     timeline: { en: "4-8 weeks typically", ta: "பொதுவாக 4-8 வாரங்கள்" },
+    feeRupees: { min: 500, max: 2000 },
+    timelineDays: { min: 28, max: 56 },
     portalUrl: "https://eservices.tn.gov.in/",
     portalLabel: { en: "TN Revenue Dept. e-Services", ta: "தமிழ்நாடு வருவாய்த் துறை இ-சேவைகள்" },
     instructions: {
@@ -122,6 +137,8 @@ export const tasks: Task[] = [
     ],
     fee: { en: "Nominal admin fee", ta: "சிறிய நிர்வாகக் கட்டணம்" },
     timeline: { en: "2-4 weeks", ta: "2-4 வாரங்கள்" },
+    feeRupees: { min: 100, max: 500 },
+    timelineDays: { min: 14, max: 28 },
     portalUrl: "https://chennaicorporation.gov.in/",
     portalLabel: { en: "Greater Chennai Corporation", ta: "சென்னை மாநகராட்சி" },
     instructions: {
@@ -146,6 +163,8 @@ export const tasks: Task[] = [
     ],
     fee: { en: "Usually free", ta: "பொதுவாக இலவசம்" },
     timeline: { en: "1-4 weeks; faster if a nominee is registered", ta: "1-4 வாரங்கள்; நியமிதர் பதிவு செய்யப்பட்டிருந்தால் வேகமாக முடியும்" },
+    feeRupees: { min: 0, max: 0 },
+    timelineDays: { min: 7, max: 28 },
     instructions: {
       en: "If a nominee was registered, the process is much simpler — the bank pays out to the nominee directly with just the death certificate and ID. Without a nominee, banks usually require the Legal Heir Certificate (and for larger balances, sometimes a Succession Certificate from a civil court).",
       ta: "நியமிதர் பதிவு செய்யப்பட்டிருந்தால், செயல்முறை மிகவும் எளிதானது — இறப்புச் சான்றிதழ் மற்றும் அடையாள ஆதாரத்துடன் வங்கி நேரடியாக நியமிதருக்கு தொகையை வழங்கும். நியமிதர் இல்லாத பட்சத்தில், வங்கிகள் பொதுவாக வாரிசுச் சான்றிதழைக் கோரும் (அதிக தொகைக்கு, சில நேரங்களில் சிவில் நீதிமன்றத்தில் இருந்து வாரிசு உரிமைச் சான்றிதழ் தேவைப்படலாம்).",
@@ -168,6 +187,8 @@ export const tasks: Task[] = [
     ],
     fee: { en: "Free to file", ta: "தாக்கல் செய்ய இலவசம்" },
     timeline: { en: "30-90 days depending on insurer and claim type", ta: "காப்பீட்டாளர் மற்றும் உரிமைகோரல் வகையைப் பொறுத்து 30-90 நாட்கள்" },
+    feeRupees: { min: 0, max: 0 },
+    timelineDays: { min: 30, max: 90 },
     portalUrl: "https://licindia.in/",
     portalLabel: { en: "LIC (if applicable)", ta: "LIC (பொருந்தினால்)" },
     instructions: {
@@ -195,6 +216,8 @@ export const tasks: Task[] = [
     ],
     fee: { en: "Free", ta: "இலவசம்" },
     timeline: { en: "4-8 weeks", ta: "4-8 வாரங்கள்" },
+    feeRupees: { min: 0, max: 0 },
+    timelineDays: { min: 28, max: 56 },
     portalUrl: "https://www.epfindia.gov.in/",
     portalLabel: { en: "EPFO portal", ta: "EPFO போர்டல்" },
     instructions: {
@@ -219,6 +242,8 @@ export const tasks: Task[] = [
     ],
     fee: { en: "Nominal transfer fee", ta: "சிறிய மாற்றக் கட்டணம்" },
     timeline: { en: "1-3 weeks", ta: "1-3 வாரங்கள்" },
+    feeRupees: { min: 100, max: 300 },
+    timelineDays: { min: 7, max: 21 },
     portalUrl: "https://www.tangedco.gov.in/",
     portalLabel: { en: "TANGEDCO", ta: "TANGEDCO" },
     instructions: {
@@ -242,6 +267,8 @@ export const tasks: Task[] = [
     ],
     fee: { en: "Usually free or nominal", ta: "பொதுவாக இலவசம் அல்லது சிறிய கட்டணம்" },
     timeline: { en: "1-2 weeks", ta: "1-2 வாரங்கள்" },
+    feeRupees: { min: 0, max: 200 },
+    timelineDays: { min: 7, max: 14 },
     instructions: {
       en: "Visit or call the distributor directly — most allow transfer to a family member with a simple written request plus the death certificate.",
       ta: "விநியோகஸ்தரை நேரடியாக அணுகவும் அல்லது அழைக்கவும் — பெரும்பாலானவை ஒரு எளிய எழுத்துப்பூர்வ கோரிக்கை மற்றும் இறப்புச் சான்றிதழுடன் குடும்ப உறுப்பினருக்கு மாற்ற அனுமதிக்கும்.",
@@ -265,6 +292,8 @@ export const tasks: Task[] = [
     ],
     fee: { en: "RTO transfer fee (varies by vehicle type)", ta: "RTO மாற்றக் கட்டணம் (வாகன வகையைப் பொறுத்து மாறுபடும்)" },
     timeline: { en: "2-4 weeks", ta: "2-4 வாரங்கள்" },
+    feeRupees: { min: 300, max: 1500 },
+    timelineDays: { min: 14, max: 28 },
     portalUrl: "https://parivahan.gov.in/",
     portalLabel: { en: "Parivahan portal", ta: "பரிவாகன் போர்டல்" },
     instructions: {
@@ -289,6 +318,8 @@ export const tasks: Task[] = [
     ],
     fee: { en: "Free", ta: "இலவசம்" },
     timeline: { en: "Varies — align with the IT filing deadline for that year", ta: "மாறுபடும் — அந்த ஆண்டு வரி தாக்கல் காலக்கெடுவுடன் பொருந்தும்படி செய்யவும்" },
+    feeRupees: { min: 0, max: 0 },
+    timelineDays: { min: 7, max: 60 },
     portalUrl: "https://www.incometax.gov.in/",
     portalLabel: { en: "Income Tax e-filing portal", ta: "வருமான வரி இ-தாக்கல் போர்டல்" },
     instructions: {
@@ -312,6 +343,8 @@ export const tasks: Task[] = [
     ],
     fee: { en: "Free", ta: "இலவசம்" },
     timeline: { en: "2-4 weeks", ta: "2-4 வாரங்கள்" },
+    feeRupees: { min: 0, max: 0 },
+    timelineDays: { min: 14, max: 28 },
     portalUrl: "https://www.tnpds.gov.in/",
     portalLabel: { en: "TNPDS portal", ta: "TNPDS போர்டல்" },
     instructions: {
@@ -338,6 +371,8 @@ export const tasks: Task[] = [
     ],
     fee: { en: "Free", ta: "இலவசம்" },
     timeline: { en: "2-4 weeks", ta: "2-4 வாரங்கள்" },
+    feeRupees: { min: 0, max: 0 },
+    timelineDays: { min: 14, max: 28 },
     portalUrl: "https://voters.eci.gov.in/",
     portalLabel: { en: "National Voter Service Portal", ta: "தேசிய வாக்காளர் சேவை போர்டல்" },
     instructions: {
@@ -362,6 +397,8 @@ export const tasks: Task[] = [
     ],
     fee: { en: "Standard passport reissue/update fee applies", ta: "வழக்கமான கடவுச்சீட்டு மறு வழங்கல்/புதுப்பிப்புக் கட்டணம் பொருந்தும்" },
     timeline: { en: "1-3 weeks for reissue, once the appointment is scheduled", ta: "சந்திப்பு நேரம் திட்டமிடப்பட்டவுடன், மறு வழங்கலுக்கு 1-3 வாரங்கள்" },
+    feeRupees: { min: 1500, max: 3500 },
+    timelineDays: { min: 7, max: 21 },
     portalUrl: "https://www.passportindia.gov.in/",
     portalLabel: { en: "Passport Seva", ta: "பாஸ்போர்ட் சேவா" },
     instructions: {
@@ -389,6 +426,8 @@ export const tasks: Task[] = [
     ],
     fee: { en: "Usually free", ta: "பொதுவாக இலவசம்" },
     timeline: { en: "2-4 weeks; faster if a nominee was registered", ta: "2-4 வாரங்கள்; நியமிதர் பதிவு செய்யப்பட்டிருந்தால் வேகமாக முடியும்" },
+    feeRupees: { min: 0, max: 0 },
+    timelineDays: { min: 14, max: 28 },
     instructions: {
       en: "Contact each AMC (for mutual funds) or the broker/depository participant (for shares and demat holdings) separately — there is no single portal. If a nominee was registered, the process is much faster.",
       ta: "ஒவ்வொரு AMC-ஐயும் (பரஸ்பர நிதிக்கு) அல்லது பிரோக்கர்/டெபாசிட்டரி பங்குதாரரையும் (பங்குகள் மற்றும் டீமேட்டுக்கு) தனித்தனியாக தொடர்பு கொள்ளவும் — ஒரே ஒரு போர்டல் இல்லை. நியமிதர் பதிவு செய்யப்பட்டிருந்தால், செயல்முறை மிக வேகமாக இருக்கும்.",
@@ -410,6 +449,8 @@ export const tasks: Task[] = [
     ],
     fee: { en: "Usually free", ta: "பொதுவாக இலவசம்" },
     timeline: { en: "Same day to a few days", ta: "அன்றே முதல் சில நாட்கள் வரை" },
+    feeRupees: { min: 0, max: 0 },
+    timelineDays: { min: 1, max: 5 },
     instructions: {
       en: "Most telecom and DTH operators allow a straightforward transfer to a family member's name with the death certificate and the new holder's ID — visit a retail store or call customer care.",
       ta: "பெரும்பாலான தொலைத்தொடர்பு மற்றும் டிடிஎச் நிறுவனங்கள், இறப்புச் சான்றிதழ் மற்றும் புதிய உரிமையாளரின் அடையாள ஆதாரத்துடன் குடும்ப உறுப்பினர் பெயருக்கு எளிதாக மாற்ற அனுமதிக்கும் — விற்பனை நிலையத்திற்குச் செல்லவும் அல்லது வாடிக்கையாளர் சேவையை அழைக்கவும்.",

@@ -1,15 +1,19 @@
 import { tasks, type Task } from "@/data/tasks";
 import type { Answers } from "@/data/intakeQuestions";
 
-export interface OrderedTask extends Task {
-  /** True once every task this one depends on is itself in the applicable set. */
-  blockedBy: string[];
-}
+export type OrderedTask = Task;
 
 /**
  * Filters tasks to the ones that apply to this family's situation, then
  * orders them so a dependency never appears after something that needs it
  * (stable topological sort, ties broken by original array order).
+ *
+ * Whether a task is currently *blocked* depends on which steps the user has
+ * actually checked off — that's runtime UI state this pure function has no
+ * access to, so it's deliberately not computed here. See `isTaskBlocked` in
+ * ChecklistView, which cross-references each task's `dependsOn` against the
+ * live `done` set (and this checklist's own applicable ids, so a
+ * prerequisite the user said they already have doesn't block anything).
  */
 export function buildChecklist(answers: Answers): OrderedTask[] {
   const applicable = tasks.filter((t) => t.appliesIf(answers));
@@ -29,19 +33,14 @@ export function buildChecklist(answers: Answers): OrderedTask[] {
     );
 
     if (next === -1) {
-      // Safety net: dependency cycle or bad data — append the rest as-is
-      // rather than looping forever.
-      for (const t of remaining) {
-        resolved.push({
-          ...t,
-          blockedBy: t.dependsOn.filter((d) => applicableIds.has(d) && !resolvedIds.has(d)),
-        });
-      }
+      // Safety net: dependency cycle or bad data — append whatever's left
+      // as-is rather than looping forever.
+      resolved.push(...remaining);
       break;
     }
 
     const [task] = remaining.splice(next, 1);
-    resolved.push({ ...task, blockedBy: [] });
+    resolved.push(task);
     resolvedIds.add(task.id);
   }
 

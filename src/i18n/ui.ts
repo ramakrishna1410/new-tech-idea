@@ -173,6 +173,54 @@ export const ui = {
     en: "View my saved checklist",
     ta: "எனது சேமிக்கப்பட்ட பட்டியலைக் காண்க",
   },
+  familySharingTitle: {
+    en: "Share with family",
+    ta: "குடும்பத்துடன் பகிர்",
+  },
+  familySharingHelp: {
+    en: "Invite family members by email so they see this same checklist and can check off tasks together.",
+    ta: "குடும்ப உறுப்பினர்களை மின்னஞ்சல் மூலம் அழையுங்கள், அவர்களும் இதே பட்டியலைக் கண்டு பணிகளை ஒன்றாக முடிக்கலாம்.",
+  },
+  inviteButton: {
+    en: "Invite",
+    ta: "அழை",
+  },
+  sharedWith: {
+    en: "Shared with",
+    ta: "பகிரப்பட்டவர்கள்",
+  },
+  removeMember: {
+    en: "Remove",
+    ta: "நீக்கு",
+  },
+  sharedChecklistNotice: {
+    en: "You're viewing a checklist shared with you by a family member.",
+    ta: "இது ஒரு குடும்ப உறுப்பினர் உங்களுடன் பகிர்ந்த பட்டியல்.",
+  },
+  showNextStepOnly: {
+    en: "Show just my next step",
+    ta: "எனது அடுத்த படியை மட்டும் காட்டு",
+  },
+  showAllSteps: {
+    en: "Show all steps",
+    ta: "அனைத்து படிகளையும் காட்டு",
+  },
+  stepsRemaining: {
+    en: "{done} of {total} steps done",
+    ta: "{total} படிகளில் {done} முடிந்தது",
+  },
+  allStepsDone: {
+    en: "You've completed every step on this checklist.",
+    ta: "இந்தப் பட்டியலில் உள்ள அனைத்து படிகளையும் நீங்கள் முடித்துவிட்டீர்கள்.",
+  },
+  estimateSummary: {
+    en: "Roughly ₹{feeMin}–₹{feeMax} in fees, and about {weeksMin}–{weeksMax} weeks if you do these one after another where required.",
+    ta: "தோராயமாக ₹{feeMin}–₹{feeMax} கட்டணம், தேவைப்படும் இடங்களில் ஒன்றன்பின் ஒன்றாகச் செய்தால் சுமார் {weeksMin}–{weeksMax} வாரங்கள்.",
+  },
+  estimateNote: {
+    en: "Rough estimate based on typical cases — actual costs and timelines vary by district and case.",
+    ta: "இது பொதுவான வழக்குகளின் அடிப்படையிலான தோராயமான மதிப்பீடு — உண்மையான செலவுகளும் காலஅளவும் மாவட்டம் மற்றும் வழக்கைப் பொறுத்து மாறுபடும்.",
+  },
 } satisfies Record<string, LocalizedText>;
 
 /** Simple {placeholder} substitution for the strings above that need it. */

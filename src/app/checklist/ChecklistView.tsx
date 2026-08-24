@@ -6,12 +6,14 @@ import { useEffect, useMemo, useState } from "react";
 import { buildChecklist, type OrderedTask } from "@/lib/buildChecklist";
 import { decodeAnswers } from "@/lib/urlState";
 import { useSavedChecklist } from "@/lib/useSavedChecklist";
+import { estimateChecklist } from "@/lib/estimateChecklist";
 import { useLocale } from "@/i18n/LocaleContext";
 import { LanguageToggle } from "@/i18n/LanguageToggle";
 import { ui, format } from "@/i18n/ui";
 import { useAuth } from "@/auth/AuthContext";
 import { AuthWidget } from "@/auth/AuthWidget";
 import { TaskDocuments } from "@/documents/TaskDocuments";
+import { FamilySharing } from "@/sharing/FamilySharing";
 
 export default function ChecklistView() {
   const searchParams = useSearchParams();
@@ -26,9 +28,23 @@ export default function ChecklistView() {
   const answers = usingAccount ? (saved.answers ?? {}) : urlAnswers;
 
   const checklist = useMemo(() => buildChecklist(answers), [answers]);
+  const checklistIds = useMemo(() => new Set(checklist.map((t) => t.id)), [checklist]);
   const [localDone, setLocalDone] = useState<Set<string>>(new Set());
   const done = usingAccount ? saved.done : localDone;
   const [expandAll, setExpandAll] = useState(false);
+  const [focusMode, setFocusMode] = useState(false);
+
+  // A task is blocked only by prerequisites that are both (a) still part of
+  // this checklist — a prerequisite the user said they already have was
+  // filtered out entirely and shouldn't block anything — and (b) not yet
+  // checked off.
+  function isTaskBlocked(task: OrderedTask) {
+    return task.dependsOn.some((depId) => checklistIds.has(depId) && !done.has(depId));
+  }
+
+  const nextTask = checklist.find((t) => !done.has(t.id) && !isTaskBlocked(t));
+  const doneCount = checklist.filter((t) => done.has(t.id)).length;
+  const estimate = useMemo(() => estimateChecklist(checklist), [checklist]);
   // Populated post-mount only — reading window.location during render would
   // diverge between the static HTML and the client, causing a hydration
   // mismatch.
@@ -105,6 +121,18 @@ export default function ChecklistView() {
         })}
       </p>
 
+      <div className="mt-3 rounded-lg bg-slate-50 p-3 dark:bg-slate-900/60">
+        <p className="text-sm font-medium text-slate-700 dark:text-slate-200">
+          {format(t(ui.estimateSummary), {
+            feeMin: estimate.feeMin.toLocaleString("en-IN"),
+            feeMax: estimate.feeMax.toLocaleString("en-IN"),
+            weeksMin: estimate.weeksMin,
+            weeksMax: estimate.weeksMax,
+          })}
+        </p>
+        <p className="mt-1 text-xs text-slate-400 dark:text-slate-500">{t(ui.estimateNote)}</p>
+      </div>
+
       {configured && !session && (
         <div className="no-print mt-4 rounded-lg border border-slate-200 p-4 dark:border-slate-800">
           <p className="text-sm font-medium text-slate-700 dark:text-slate-200">{t(ui.signIn)}</p>
@@ -114,6 +142,13 @@ export default function ChecklistView() {
       {usingAccount && saved.saving && (
         <p className="no-print mt-2 text-xs text-slate-400 dark:text-slate-500">{t(ui.saving)}</p>
       )}
+
+      {usingAccount && saved.isSharedByOther && (
+        <p className="no-print mt-4 rounded-lg border border-teal-200 bg-teal-50/50 p-3 text-sm text-teal-800 dark:border-teal-800 dark:bg-teal-950/40 dark:text-teal-200">
+          {t(ui.sharedChecklistNotice)}
+        </p>
+      )}
+      {usingAccount && !saved.isSharedByOther && session && <FamilySharing ownerId={session.user.id} />}
 
       {shareUrl && (
         <div className="no-print mt-4 flex flex-wrap gap-3">
@@ -140,18 +175,39 @@ export default function ChecklistView() {
         </div>
       )}
 
-      <ol className="mt-8 flex flex-col gap-4">
-        {checklist.map((task, i) => (
-          <TaskCard
-            key={task.id}
-            index={i + 1}
-            task={task}
-            isDone={done.has(task.id)}
-            isBlocked={task.blockedBy.some((id) => !done.has(id))}
-            forceOpen={expandAll}
-            onToggle={() => toggleDone(task.id)}
-          />
-        ))}
+      <div className="no-print mt-6 flex flex-wrap items-center justify-between gap-3">
+        <p className="text-sm text-slate-500 dark:text-slate-400">
+          {format(t(ui.stepsRemaining), { done: doneCount, total: checklist.length })}
+        </p>
+        <button
+          onClick={() => setFocusMode((f) => !f)}
+          className="text-sm font-medium text-teal-700 hover:text-teal-800 dark:text-teal-400 dark:hover:text-teal-300"
+        >
+          {focusMode ? t(ui.showAllSteps) : t(ui.showNextStepOnly)}
+        </button>
+      </div>
+
+      {focusMode && !nextTask && (
+        <p className="mt-6 rounded-lg border border-teal-200 bg-teal-50/50 p-4 text-sm text-teal-800 dark:border-teal-800 dark:bg-teal-950/40 dark:text-teal-200">
+          {t(ui.allStepsDone)}
+        </p>
+      )}
+
+      <ol className="mt-4 flex flex-col gap-4">
+        {(focusMode ? checklist.filter((t) => t.id === nextTask?.id) : checklist).map((task) => {
+          const i = checklist.indexOf(task);
+          return (
+            <TaskCard
+              key={task.id}
+              index={i + 1}
+              task={task}
+              isDone={done.has(task.id)}
+              isBlocked={isTaskBlocked(task)}
+              forceOpen={expandAll || focusMode}
+              onToggle={() => toggleDone(task.id)}
+            />
+          );
+        })}
       </ol>
 
       <p className="mt-10 text-sm text-slate-400 dark:text-slate-500">{t(ui.disclaimer)}</p>

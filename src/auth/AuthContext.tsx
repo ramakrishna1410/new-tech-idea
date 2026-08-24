@@ -51,7 +51,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (!supabase) return { error: "Accounts are not configured for this deployment." };
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
-      options: { redirectTo: window.location.href },
+      options: {
+        redirectTo: window.location.href,
+        // Without this, Google silently reuses whichever account already
+        // has an active session in the browser instead of letting the user
+        // pick — so switching accounts (or signing out and back in as
+        // someone else on a shared device) would otherwise be impossible.
+        queryParams: { prompt: "select_account" },
+      },
     });
     return { error: error?.message ?? null };
   }

@@ -5,17 +5,29 @@ import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { buildChecklist, type OrderedTask } from "@/lib/buildChecklist";
 import { decodeAnswers } from "@/lib/urlState";
+import { useSavedChecklist } from "@/lib/useSavedChecklist";
 import { useLocale } from "@/i18n/LocaleContext";
 import { LanguageToggle } from "@/i18n/LanguageToggle";
 import { ui, format } from "@/i18n/ui";
+import { useAuth } from "@/auth/AuthContext";
+import { AuthWidget } from "@/auth/AuthWidget";
+import { TaskDocuments } from "@/documents/TaskDocuments";
 
 export default function ChecklistView() {
   const searchParams = useSearchParams();
   const { t } = useLocale();
+  const { session, configured } = useAuth();
   const encoded = searchParams.get("a") ?? "";
-  const answers = useMemo(() => decodeAnswers(encoded), [encoded]);
+  const hasUrlAnswers = encoded.length > 0;
+  const urlAnswers = useMemo(() => decodeAnswers(encoded), [encoded]);
+
+  const usingAccount = configured && session !== null;
+  const saved = useSavedChecklist(urlAnswers, hasUrlAnswers);
+  const answers = usingAccount ? (saved.answers ?? {}) : urlAnswers;
+
   const checklist = useMemo(() => buildChecklist(answers), [answers]);
-  const [done, setDone] = useState<Set<string>>(new Set());
+  const [localDone, setLocalDone] = useState<Set<string>>(new Set());
+  const done = usingAccount ? saved.done : localDone;
   const [expandAll, setExpandAll] = useState(false);
   // Populated post-mount only — reading window.location during render would
   // diverge between the static HTML and the client, causing a hydration
@@ -31,12 +43,12 @@ export default function ChecklistView() {
   }, []);
 
   function toggleDone(id: string) {
-    setDone((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
-    });
+    const next = new Set(done);
+    if (next.has(id)) next.delete(id);
+    else next.add(id);
+
+    if (usingAccount) saved.saveDone(next);
+    else setLocalDone(next);
   }
 
   function handlePrint() {
@@ -48,6 +60,17 @@ export default function ChecklistView() {
   const whatsappUrl = shareUrl
     ? `https://wa.me/?text=${encodeURIComponent(format(t(ui.whatsappMessage), { url: shareUrl }))}`
     : "";
+
+  if (usingAccount && !saved.loaded) {
+    return (
+      <main className="mx-auto max-w-2xl px-6 py-16">
+        <div className="mb-4 flex justify-end">
+          <LanguageToggle />
+        </div>
+        <p className="text-slate-500 dark:text-slate-400">{t(ui.loadingYourChecklist)}</p>
+      </main>
+    );
+  }
 
   if (checklist.length === 0) {
     const [noAnswersBefore, noAnswersAfter] = t(ui.noAnswersFound).split("{link}");
@@ -69,7 +92,8 @@ export default function ChecklistView() {
 
   return (
     <main className="mx-auto max-w-2xl px-6 py-16">
-      <div className="mb-4 flex justify-end">
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+        <AuthWidget />
         <LanguageToggle />
       </div>
 
@@ -80,6 +104,16 @@ export default function ChecklistView() {
           plural: checklist.length === 1 ? "" : "s",
         })}
       </p>
+
+      {configured && !session && (
+        <div className="no-print mt-4 rounded-lg border border-slate-200 p-4 dark:border-slate-800">
+          <p className="text-sm font-medium text-slate-700 dark:text-slate-200">{t(ui.signIn)}</p>
+          <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">{t(ui.signInHelp)}</p>
+        </div>
+      )}
+      {usingAccount && saved.saving && (
+        <p className="no-print mt-2 text-xs text-slate-400 dark:text-slate-500">{t(ui.saving)}</p>
+      )}
 
       {shareUrl && (
         <div className="no-print mt-4 flex flex-wrap gap-3">
@@ -215,6 +249,8 @@ function TaskCard({
                   })}
                 </a>
               )}
+
+              <TaskDocuments taskId={task.id} />
             </div>
           )}
 

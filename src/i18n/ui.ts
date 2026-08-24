@@ -101,6 +101,70 @@ export const ui = {
     en: "Start the questionnaire",
     ta: "கேள்விகளைத் தொடங்குங்கள்",
   },
+  signIn: {
+    en: "Sign in to save progress",
+    ta: "முன்னேற்றத்தைச் சேமிக்க உள்நுழையவும்",
+  },
+  signInHelp: {
+    en: "Save your checklist and uploaded documents so they're there next time, on any device.",
+    ta: "உங்கள் பட்டியலும் பதிவேற்றிய ஆவணங்களும் அடுத்த முறையும், எந்த சாதனத்திலும் கிடைக்குமாறு சேமிக்கவும்.",
+  },
+  emailPlaceholder: {
+    en: "you@example.com",
+    ta: "your@email.com",
+  },
+  sendMagicLink: {
+    en: "Send me a sign-in link",
+    ta: "உள்நுழைவு இணைப்பை அனுப்பு",
+  },
+  checkYourEmail: {
+    en: "Check your email for a sign-in link.",
+    ta: "உள்நுழைவு இணைப்புக்கு உங்கள் மின்னஞ்சலைப் பார்க்கவும்.",
+  },
+  signedInAs: {
+    en: "Signed in as {email}",
+    ta: "{email} என உள்நுழைந்துள்ளீர்கள்",
+  },
+  signOut: {
+    en: "Sign out",
+    ta: "வெளியேறு",
+  },
+  savedToAccount: {
+    en: "Saved to your account",
+    ta: "உங்கள் கணக்கில் சேமிக்கப்பட்டது",
+  },
+  saving: {
+    en: "Saving…",
+    ta: "சேமிக்கிறது…",
+  },
+  loadingYourChecklist: {
+    en: "Loading your saved checklist…",
+    ta: "உங்கள் சேமிக்கப்பட்ட பட்டியலை ஏற்றுகிறது…",
+  },
+  myDocuments: {
+    en: "My uploaded files",
+    ta: "பதிவேற்றிய கோப்புகள்",
+  },
+  uploadDocument: {
+    en: "Upload a file",
+    ta: "கோப்பை பதிவேற்று",
+  },
+  uploading: {
+    en: "Uploading…",
+    ta: "பதிவேற்றுகிறது…",
+  },
+  deleteFile: {
+    en: "Delete",
+    ta: "நீக்கு",
+  },
+  signInToUpload: {
+    en: "Sign in to attach and store documents for this step.",
+    ta: "இந்தப் படிக்கான ஆவணங்களை இணைத்து சேமிக்க உள்நுழையவும்.",
+  },
+  viewSavedChecklist: {
+    en: "View my saved checklist",
+    ta: "எனது சேமிக்கப்பட்ட பட்டியலைக் காண்க",
+  },
 } satisfies Record<string, LocalizedText>;
 
 /** Simple {placeholder} substitution for the strings above that need it. */

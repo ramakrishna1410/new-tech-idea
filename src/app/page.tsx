@@ -4,9 +4,11 @@ import Link from "next/link";
 import { useLocale } from "@/i18n/LocaleContext";
 import { LanguageToggle } from "@/i18n/LanguageToggle";
 import { ui } from "@/i18n/ui";
+import { useAuth } from "@/auth/AuthContext";
 
 export default function Home() {
   const { t } = useLocale();
+  const { session } = useAuth();
 
   return (
     <main className="mx-auto flex min-h-screen max-w-2xl flex-col justify-center px-6 py-16">
@@ -27,6 +29,14 @@ export default function Home() {
         </Link>
       </div>
       <p className="mt-6 text-sm text-slate-500 dark:text-slate-400">{t(ui.heroFootnote)}</p>
+      {session && (
+        <Link
+          href="/checklist"
+          className="mt-4 text-sm font-medium text-teal-700 hover:text-teal-800 dark:text-teal-400 dark:hover:text-teal-300"
+        >
+          {t(ui.viewSavedChecklist)} →
+        </Link>
+      )}
     </main>
   );
 }

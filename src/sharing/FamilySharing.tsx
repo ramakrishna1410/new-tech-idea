@@ -1,9 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useChecklistMembers } from "@/lib/useChecklistMembers";
 import { useLocale } from "@/i18n/LocaleContext";
-import { ui } from "@/i18n/ui";
+import { ui, format } from "@/i18n/ui";
 
 export function FamilySharing({ ownerId }: { ownerId: string }) {
   const { t } = useLocale();
@@ -11,6 +11,18 @@ export function FamilySharing({ ownerId }: { ownerId: string }) {
   const [email, setEmail] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [sending, setSending] = useState(false);
+  // Populated post-mount only, same reasoning as ChecklistView's shareUrl —
+  // reading window.location during render would diverge between the static
+  // HTML and the client.
+  const [homeUrl, setHomeUrl] = useState("");
+
+  useEffect(() => {
+    const url = new URL(window.location.href);
+    // Strip the "/checklist" segment (and any query string) so the invite
+    // link points at the app's landing page, not this specific checklist.
+    const basePath = url.pathname.replace(/\/checklist\/?$/, "/");
+    setHomeUrl(`${url.origin}${basePath}`);
+  }, []);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -52,18 +64,35 @@ export function FamilySharing({ ownerId }: { ownerId: string }) {
           <p className="text-xs font-medium uppercase tracking-wide text-slate-400 dark:text-slate-500">
             {t(ui.sharedWith)}
           </p>
-          <ul className="mt-1 flex flex-col gap-1">
-            {members.map((m) => (
-              <li key={m} className="flex items-center justify-between gap-2 text-sm text-slate-700 dark:text-slate-200">
-                <span className="truncate">{m}</span>
-                <button
-                  onClick={() => remove(m)}
-                  className="flex-shrink-0 text-xs text-slate-400 hover:text-red-600 dark:text-slate-500 dark:hover:text-red-400"
-                >
-                  {t(ui.removeMember)}
-                </button>
-              </li>
-            ))}
+          <ul className="mt-1 flex flex-col gap-2">
+            {members.map((m) => {
+              const whatsappHref = homeUrl
+                ? `https://wa.me/?text=${encodeURIComponent(format(t(ui.invitedShareMessage), { email: m, url: homeUrl }))}`
+                : "";
+              return (
+                <li key={m} className="flex flex-wrap items-center justify-between gap-2 text-sm text-slate-700 dark:text-slate-200">
+                  <span className="truncate">{m}</span>
+                  <div className="flex items-center gap-3">
+                    {whatsappHref && (
+                      <a
+                        href={whatsappHref}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-xs font-medium text-teal-700 hover:text-teal-800 dark:text-teal-400 dark:hover:text-teal-300"
+                      >
+                        {t(ui.shareInviteButton)}
+                      </a>
+                    )}
+                    <button
+                      onClick={() => remove(m)}
+                      className="text-xs text-slate-400 hover:text-red-600 dark:text-slate-500 dark:hover:text-red-400"
+                    >
+                      {t(ui.removeMember)}
+                    </button>
+                  </div>
+                </li>
+              );
+            })}
           </ul>
         </div>
       )}

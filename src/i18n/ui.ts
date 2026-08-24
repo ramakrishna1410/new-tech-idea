@@ -197,6 +197,14 @@ export const ui = {
     en: "You're viewing a checklist shared with you by a family member.",
     ta: "இது ஒரு குடும்ப உறுப்பினர் உங்களுடன் பகிர்ந்த பட்டியல்.",
   },
+  shareInviteButton: {
+    en: "Share invite on WhatsApp",
+    ta: "வாட்ஸ்அப்பில் அழைப்பைப் பகிர்",
+  },
+  invitedShareMessage: {
+    en: "I've added {email} to our family's estate-paperwork checklist. Please sign in with that exact email at: {url}",
+    ta: "எங்கள் குடும்பத்தின் சொத்து ஆவணப் பட்டியலில் {email}-ஐ சேர்த்துள்ளேன். அதே மின்னஞ்சலைப் பயன்படுத்தி இங்கு உள்நுழையவும்: {url}",
+  },
   showNextStepOnly: {
     en: "Show just my next step",
     ta: "எனது அடுத்த படியை மட்டும் காட்டு",

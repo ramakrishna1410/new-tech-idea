@@ -6,12 +6,18 @@ import { useLocale } from "@/i18n/LocaleContext";
 import { ui, format } from "@/i18n/ui";
 
 export function AuthWidget() {
-  const { session, loading, configured, signInWithEmail, signOut } = useAuth();
+  const { session, loading, configured, signInWithEmail, signInWithGoogle, signOut } = useAuth();
   const { t } = useLocale();
   const [email, setEmail] = useState("");
   const [sent, setSent] = useState(false);
   const [sending, setSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  async function handleGoogleClick() {
+    setError(null);
+    const { error: googleError } = await signInWithGoogle();
+    if (googleError) setError(googleError);
+  }
 
   if (!configured || loading) return null;
 
@@ -45,8 +51,17 @@ export function AuthWidget() {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="no-print flex flex-col gap-2">
-      <div className="flex flex-wrap items-center gap-2">
+    <div className="no-print flex flex-col gap-2">
+      <button
+        onClick={handleGoogleClick}
+        className="w-fit rounded-lg border border-slate-300 px-3 py-1.5 text-sm font-medium text-slate-700 hover:border-teal-700 hover:text-teal-700 dark:border-slate-700 dark:text-slate-200 dark:hover:border-teal-400 dark:hover:text-teal-400"
+      >
+        {t(ui.continueWithGoogle)}
+      </button>
+
+      <p className="text-xs text-slate-400 dark:text-slate-500">{t(ui.orDivider)}</p>
+
+      <form onSubmit={handleSubmit} className="flex flex-wrap items-center gap-2">
         <input
           type="email"
           required
@@ -62,8 +77,8 @@ export function AuthWidget() {
         >
           {t(ui.sendMagicLink)}
         </button>
-      </div>
+      </form>
       {error && <p className="text-xs text-red-600 dark:text-red-400">{error}</p>}
-    </form>
+    </div>
   );
 }

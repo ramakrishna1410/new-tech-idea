@@ -10,6 +10,7 @@ interface AuthContextValue {
   loading: boolean;
   configured: boolean;
   signInWithEmail: (email: string) => Promise<{ error: string | null }>;
+  signInWithGoogle: () => Promise<{ error: string | null }>;
   signOut: () => Promise<void>;
 }
 
@@ -46,12 +47,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return { error: error?.message ?? null };
   }
 
+  async function signInWithGoogle() {
+    if (!supabase) return { error: "Accounts are not configured for this deployment." };
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: { redirectTo: window.location.href },
+    });
+    return { error: error?.message ?? null };
+  }
+
   async function signOut() {
     await supabase?.auth.signOut();
   }
 
   return (
-    <AuthContext.Provider value={{ session, loading, configured: supabase !== null, signInWithEmail, signOut }}>
+    <AuthContext.Provider
+      value={{ session, loading, configured: supabase !== null, signInWithEmail, signInWithGoogle, signOut }}
+    >
       {children}
     </AuthContext.Provider>
   );

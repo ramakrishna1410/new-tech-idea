@@ -117,6 +117,14 @@ export const ui = {
     en: "Send me a sign-in link",
     ta: "உள்நுழைவு இணைப்பை அனுப்பு",
   },
+  continueWithGoogle: {
+    en: "Continue with Google",
+    ta: "Google மூலம் தொடரவும்",
+  },
+  orDivider: {
+    en: "or",
+    ta: "அல்லது",
+  },
   checkYourEmail: {
     en: "Check your email for a sign-in link.",
     ta: "உள்நுழைவு இணைப்புக்கு உங்கள் மின்னஞ்சலைப் பார்க்கவும்.",

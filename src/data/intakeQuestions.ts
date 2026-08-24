@@ -9,7 +9,12 @@ export type AnswerKey =
   | "hadElectricityConnection"
   | "hadGasConnection"
   | "ownedVehicle"
-  | "hadPan";
+  | "hadPan"
+  | "hadRationCard"
+  | "hadVoterId"
+  | "hadPassport"
+  | "hadMutualFundsOrDemat"
+  | "hadMobileConnection";
 
 export type AnswerValue = "yes" | "no" | "unknown";
 
@@ -92,6 +97,32 @@ export const intakeQuestions: IntakeQuestion[] = [
   {
     key: "hadPan",
     question: "Did the deceased have a PAN card / file income tax returns?",
+    options: yesNo,
+  },
+  {
+    key: "hadRationCard",
+    question: "Was the deceased listed on a ration card (PDS)?",
+    options: yesNo,
+  },
+  {
+    key: "hadVoterId",
+    question: "Did the deceased have a Voter ID (EPIC)?",
+    options: yesNo,
+  },
+  {
+    key: "hadPassport",
+    question: "Did the deceased hold a passport, or does a family member's passport list them as spouse/parent?",
+    helpText: "Relevant if a spouse or child will need to update their own passport details.",
+    options: yesNo,
+  },
+  {
+    key: "hadMutualFundsOrDemat",
+    question: "Did the deceased hold mutual funds, shares, or a demat account?",
+    options: yesNo,
+  },
+  {
+    key: "hadMobileConnection",
+    question: "Was there a mobile or DTH connection in the deceased's name?",
     options: yesNo,
   },
 ];

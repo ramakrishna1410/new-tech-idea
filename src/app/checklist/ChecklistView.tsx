@@ -2,7 +2,7 @@
 
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { buildChecklist, type OrderedTask } from "@/lib/buildChecklist";
 import { decodeAnswers } from "@/lib/urlState";
 
@@ -12,6 +12,13 @@ export default function ChecklistView() {
   const answers = useMemo(() => decodeAnswers(encoded), [encoded]);
   const checklist = useMemo(() => buildChecklist(answers), [answers]);
   const [done, setDone] = useState<Set<string>>(new Set());
+  const [expandAll, setExpandAll] = useState(false);
+
+  useEffect(() => {
+    const resetExpand = () => setExpandAll(false);
+    window.addEventListener("afterprint", resetExpand);
+    return () => window.removeEventListener("afterprint", resetExpand);
+  }, []);
 
   function toggleDone(id: string) {
     setDone((prev) => {
@@ -22,7 +29,16 @@ export default function ChecklistView() {
     });
   }
 
+  function handlePrint() {
+    setExpandAll(true);
+    // Let the expanded task details render before the print dialog opens.
+    setTimeout(() => window.print(), 50);
+  }
+
   const shareUrl = typeof window !== "undefined" ? window.location.href : "";
+  const whatsappUrl = shareUrl
+    ? `https://wa.me/?text=${encodeURIComponent(`My estate paperwork checklist for Tamil Nadu: ${shareUrl}`)}`
+    : "";
 
   if (checklist.length === 0) {
     return (
@@ -44,12 +60,28 @@ export default function ChecklistView() {
       </p>
 
       {shareUrl && (
-        <button
-          onClick={() => navigator.clipboard?.writeText(shareUrl)}
-          className="mt-4 rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:border-teal-700 hover:text-teal-700 dark:border-slate-700 dark:text-slate-200 dark:hover:border-teal-400 dark:hover:text-teal-400"
-        >
-          Copy link to this checklist
-        </button>
+        <div className="no-print mt-4 flex flex-wrap gap-3">
+          <button
+            onClick={() => navigator.clipboard?.writeText(shareUrl)}
+            className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:border-teal-700 hover:text-teal-700 dark:border-slate-700 dark:text-slate-200 dark:hover:border-teal-400 dark:hover:text-teal-400"
+          >
+            Copy link to this checklist
+          </button>
+          <a
+            href={whatsappUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:border-teal-700 hover:text-teal-700 dark:border-slate-700 dark:text-slate-200 dark:hover:border-teal-400 dark:hover:text-teal-400"
+          >
+            Share on WhatsApp
+          </a>
+          <button
+            onClick={handlePrint}
+            className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:border-teal-700 hover:text-teal-700 dark:border-slate-700 dark:text-slate-200 dark:hover:border-teal-400 dark:hover:text-teal-400"
+          >
+            Print / Save as PDF
+          </button>
+        </div>
       )}
 
       <ol className="mt-8 flex flex-col gap-4">
@@ -60,6 +92,7 @@ export default function ChecklistView() {
             task={task}
             isDone={done.has(task.id)}
             isBlocked={task.blockedBy.some((id) => !done.has(id))}
+            forceOpen={expandAll}
             onToggle={() => toggleDone(task.id)}
           />
         ))}
@@ -79,15 +112,18 @@ function TaskCard({
   task,
   isDone,
   isBlocked,
+  forceOpen,
   onToggle,
 }: {
   index: number;
   task: OrderedTask;
   isDone: boolean;
   isBlocked: boolean;
+  forceOpen: boolean;
   onToggle: () => void;
 }) {
   const [open, setOpen] = useState(false);
+  const isOpen = open || forceOpen;
 
   return (
     <li
@@ -130,7 +166,7 @@ function TaskCard({
             <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">{task.office}</p>
           </button>
 
-          {open && (
+          {isOpen && (
             <div className="mt-4 flex flex-col gap-3 text-sm text-slate-700 dark:text-slate-300">
               <p>{task.instructions}</p>
 
@@ -161,10 +197,10 @@ function TaskCard({
             </div>
           )}
 
-          {!open && (
+          {!isOpen && (
             <button
               onClick={() => setOpen(true)}
-              className="mt-2 text-sm font-medium text-teal-700 hover:text-teal-800 dark:text-teal-400 dark:hover:text-teal-300"
+              className="no-print mt-2 text-sm font-medium text-teal-700 hover:text-teal-800 dark:text-teal-400 dark:hover:text-teal-300"
             >
               Show details →
             </button>

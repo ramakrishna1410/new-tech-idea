@@ -1,7 +1,25 @@
 import { tasks, type Task } from "@/data/tasks";
 import type { Answers } from "@/data/intakeQuestions";
+import type { LocalizedText } from "@/i18n/types";
 
-export type OrderedTask = Task;
+// A handful of fields (currently just property-tax-mutation's office/portal)
+// can vary by answer — e.g. which district's property tax office applies.
+// Resolving them here means every downstream consumer (ChecklistView,
+// TaskCard) only ever sees plain values, never functions.
+export interface OrderedTask extends Omit<Task, "office" | "portalUrl" | "portalLabel"> {
+  office: LocalizedText;
+  portalUrl?: string;
+  portalLabel?: LocalizedText;
+}
+
+function resolveTask(task: Task, answers: Answers): OrderedTask {
+  return {
+    ...task,
+    office: typeof task.office === "function" ? task.office(answers) : task.office,
+    portalUrl: typeof task.portalUrl === "function" ? task.portalUrl(answers) : task.portalUrl,
+    portalLabel: typeof task.portalLabel === "function" ? task.portalLabel(answers) : task.portalLabel,
+  };
+}
 
 /**
  * Filters tasks to the ones that apply to this family's situation, then
@@ -35,12 +53,12 @@ export function buildChecklist(answers: Answers): OrderedTask[] {
     if (next === -1) {
       // Safety net: dependency cycle or bad data — append whatever's left
       // as-is rather than looping forever.
-      resolved.push(...remaining);
+      resolved.push(...remaining.map((t) => resolveTask(t, answers)));
       break;
     }
 
     const [task] = remaining.splice(next, 1);
-    resolved.push(task);
+    resolved.push(resolveTask(task, answers));
     resolvedIds.add(task.id);
   }
 

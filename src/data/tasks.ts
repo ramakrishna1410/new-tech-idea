@@ -1,5 +1,6 @@
 import type { Answers } from "./intakeQuestions";
 import type { LocalizedText } from "@/i18n/types";
+import { resolveCorporation } from "./districts";
 
 export interface NumericRange {
   min: number;
@@ -9,7 +10,8 @@ export interface NumericRange {
 export interface Task {
   id: string;
   title: LocalizedText;
-  office: LocalizedText;
+  /** Most tasks have a fixed office; property-tax-mutation resolves it from the district answer. */
+  office: LocalizedText | ((answers: Answers) => LocalizedText);
   documents: LocalizedText[];
   fee: LocalizedText;
   timeline: LocalizedText;
@@ -17,8 +19,8 @@ export interface Task {
   feeRupees: NumericRange;
   /** Rough timeline range in days, for the cost/time estimate summary. */
   timelineDays: NumericRange;
-  portalUrl?: string;
-  portalLabel?: LocalizedText;
+  portalUrl?: string | ((answers: Answers) => string | undefined);
+  portalLabel?: LocalizedText | ((answers: Answers) => LocalizedText | undefined);
   instructions: LocalizedText;
   /** Task ids that must be completed before this one is actionable. */
   dependsOn: string[];
@@ -126,10 +128,7 @@ export const tasks: Task[] = [
       en: "Update Property Tax Records",
       ta: "சொத்து வரி ஆவணங்களைப் புதுப்பித்தல்",
     },
-    office: {
-      en: "Greater Chennai Corporation (or local municipality)",
-      ta: "சென்னை மாநகராட்சி (அல்லது உள்ளூர் நகராட்சி)",
-    },
+    office: (a) => resolveCorporation(a.district).office,
     documents: [
       { en: "Legal Heir Certificate", ta: "வாரிசுச் சான்றிதழ்" },
       { en: "Patta transfer confirmation", ta: "பட்டா மாற்றம் உறுதிப்படுத்தல்" },
@@ -139,8 +138,8 @@ export const tasks: Task[] = [
     timeline: { en: "2-4 weeks", ta: "2-4 வாரங்கள்" },
     feeRupees: { min: 100, max: 500 },
     timelineDays: { min: 14, max: 28 },
-    portalUrl: "https://chennaicorporation.gov.in/",
-    portalLabel: { en: "Greater Chennai Corporation", ta: "சென்னை மாநகராட்சி" },
+    portalUrl: (a) => resolveCorporation(a.district).portalUrl,
+    portalLabel: (a) => resolveCorporation(a.district).portalLabel,
     instructions: {
       en: "Do this after the patta transfer so property tax bills are issued in the new owner's name — needed for future resale or loans.",
       ta: "பட்டா மாற்றத்திற்குப் பிறகு இதைச் செய்யவும், இதனால் சொத்து வரி பில்கள் புதிய உரிமையாளரின் பெயரில் வழங்கப்படும் — எதிர்கால மறுவிற்பனை அல்லது கடன்களுக்கு இது தேவை.",

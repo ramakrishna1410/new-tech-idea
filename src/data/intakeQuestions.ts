@@ -4,6 +4,7 @@ export type AnswerKey =
   | "deathCertificate"
   | "legalHeirCertificate"
   | "ownedProperty"
+  | "district"
   | "hadBankAccounts"
   | "bankNominee"
   | "hadInsurance"
@@ -18,7 +19,28 @@ export type AnswerKey =
   | "hadMutualFundsOrDemat"
   | "hadMobileConnection";
 
-export type AnswerValue = "yes" | "no" | "unknown";
+/**
+ * Only the well-established TN City Corporations get a named entry — every
+ * other district/municipality/town panchayat uses the generic "other"
+ * fallback rather than a fabricated name. See src/data/districts.ts for
+ * what each of these resolves to.
+ */
+export type DistrictCode =
+  | "chennai"
+  | "coimbatore"
+  | "madurai"
+  | "tiruchirappalli"
+  | "salem"
+  | "tirunelveli"
+  | "tiruppur"
+  | "erode"
+  | "vellore"
+  | "thoothukudi"
+  | "dindigul"
+  | "thanjavur"
+  | "other";
+
+export type AnswerValue = "yes" | "no" | "unknown" | DistrictCode;
 
 export type Answers = Partial<Record<AnswerKey, AnswerValue>>;
 
@@ -76,6 +98,32 @@ export const intakeQuestions: IntakeQuestion[] = [
       ta: "வீடு, குடியிருப்பு அல்லது பட்டா/சிட்டா பதிவு உள்ள விவசாய நிலம் ஆகியவை அடங்கும்.",
     },
     options: yesNo,
+  },
+  {
+    key: "district",
+    question: {
+      en: "Which city/district is the property in?",
+      ta: "சொத்து எந்த நகரம்/மாவட்டத்தில் உள்ளது?",
+    },
+    helpText: {
+      en: "Only needed if the deceased owned property — used to point you to the correct property tax office/portal.",
+      ta: "இறந்தவர் சொத்து வைத்திருந்தால் மட்டுமே தேவை — சரியான சொத்து வரி அலுவலகம்/போர்டலுக்கு உங்களை வழிநடத்த இது பயன்படும்.",
+    },
+    options: [
+      { value: "chennai", label: { en: "Chennai", ta: "சென்னை" } },
+      { value: "coimbatore", label: { en: "Coimbatore", ta: "கோயம்புத்தூர்" } },
+      { value: "madurai", label: { en: "Madurai", ta: "மதுரை" } },
+      { value: "tiruchirappalli", label: { en: "Tiruchirappalli", ta: "திருச்சிராப்பள்ளி" } },
+      { value: "salem", label: { en: "Salem", ta: "சேலம்" } },
+      { value: "tirunelveli", label: { en: "Tirunelveli", ta: "திருநெல்வேலி" } },
+      { value: "tiruppur", label: { en: "Tiruppur", ta: "திருப்பூர்" } },
+      { value: "erode", label: { en: "Erode", ta: "ஈரோடு" } },
+      { value: "vellore", label: { en: "Vellore", ta: "வேலூர்" } },
+      { value: "thoothukudi", label: { en: "Thoothukudi", ta: "தூத்துக்குடி" } },
+      { value: "dindigul", label: { en: "Dindigul", ta: "திண்டுக்கல்" } },
+      { value: "thanjavur", label: { en: "Thanjavur", ta: "தஞ்சாவூர்" } },
+      { value: "other", label: { en: "Other district", ta: "மற்ற மாவட்டம்" } },
+    ],
   },
   {
     key: "hadBankAccounts",

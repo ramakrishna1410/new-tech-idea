@@ -5,16 +5,26 @@ import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { buildChecklist, type OrderedTask } from "@/lib/buildChecklist";
 import { decodeAnswers } from "@/lib/urlState";
+import { useLocale } from "@/i18n/LocaleContext";
+import { LanguageToggle } from "@/i18n/LanguageToggle";
+import { ui, format } from "@/i18n/ui";
 
 export default function ChecklistView() {
   const searchParams = useSearchParams();
+  const { t } = useLocale();
   const encoded = searchParams.get("a") ?? "";
   const answers = useMemo(() => decodeAnswers(encoded), [encoded]);
   const checklist = useMemo(() => buildChecklist(answers), [answers]);
   const [done, setDone] = useState<Set<string>>(new Set());
   const [expandAll, setExpandAll] = useState(false);
+  // Populated post-mount only — reading window.location during render would
+  // diverge between the static HTML and the client, causing a hydration
+  // mismatch.
+  const [shareUrl, setShareUrl] = useState("");
 
   useEffect(() => {
+    setShareUrl(window.location.href);
+
     const resetExpand = () => setExpandAll(false);
     window.addEventListener("afterprint", resetExpand);
     return () => window.removeEventListener("afterprint", resetExpand);
@@ -35,16 +45,23 @@ export default function ChecklistView() {
     setTimeout(() => window.print(), 50);
   }
 
-  const shareUrl = typeof window !== "undefined" ? window.location.href : "";
   const whatsappUrl = shareUrl
-    ? `https://wa.me/?text=${encodeURIComponent(`My estate paperwork checklist for Tamil Nadu: ${shareUrl}`)}`
+    ? `https://wa.me/?text=${encodeURIComponent(format(t(ui.whatsappMessage), { url: shareUrl }))}`
     : "";
 
   if (checklist.length === 0) {
+    const [noAnswersBefore, noAnswersAfter] = t(ui.noAnswersFound).split("{link}");
     return (
       <main className="mx-auto max-w-2xl px-6 py-16">
+        <div className="mb-4 flex justify-end">
+          <LanguageToggle />
+        </div>
         <p className="text-slate-600 dark:text-slate-300">
-          No answers found. <Link href="/intake" className="text-teal-700 underline dark:text-teal-400">Start the questionnaire</Link> to build your checklist.
+          {noAnswersBefore}
+          <Link href="/intake" className="text-teal-700 underline dark:text-teal-400">
+            {t(ui.startQuestionnaire)}
+          </Link>
+          {noAnswersAfter}
         </p>
       </main>
     );
@@ -52,11 +69,16 @@ export default function ChecklistView() {
 
   return (
     <main className="mx-auto max-w-2xl px-6 py-16">
-      <h1 className="text-2xl font-semibold text-slate-900 dark:text-slate-50">Your checklist</h1>
+      <div className="mb-4 flex justify-end">
+        <LanguageToggle />
+      </div>
+
+      <h1 className="text-2xl font-semibold text-slate-900 dark:text-slate-50">{t(ui.yourChecklist)}</h1>
       <p className="mt-2 text-slate-600 dark:text-slate-300">
-        {checklist.length} step{checklist.length === 1 ? "" : "s"} based on your answers, ordered so
-        each step's prerequisites come first. Bookmark or share this page's link to come back to it —
-        nothing is stored on our servers.
+        {format(t(ui.checklistSummary), {
+          count: checklist.length,
+          plural: checklist.length === 1 ? "" : "s",
+        })}
       </p>
 
       {shareUrl && (
@@ -65,7 +87,7 @@ export default function ChecklistView() {
             onClick={() => navigator.clipboard?.writeText(shareUrl)}
             className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:border-teal-700 hover:text-teal-700 dark:border-slate-700 dark:text-slate-200 dark:hover:border-teal-400 dark:hover:text-teal-400"
           >
-            Copy link to this checklist
+            {t(ui.copyLink)}
           </button>
           <a
             href={whatsappUrl}
@@ -73,13 +95,13 @@ export default function ChecklistView() {
             rel="noopener noreferrer"
             className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:border-teal-700 hover:text-teal-700 dark:border-slate-700 dark:text-slate-200 dark:hover:border-teal-400 dark:hover:text-teal-400"
           >
-            Share on WhatsApp
+            {t(ui.shareWhatsapp)}
           </a>
           <button
             onClick={handlePrint}
             className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:border-teal-700 hover:text-teal-700 dark:border-slate-700 dark:text-slate-200 dark:hover:border-teal-400 dark:hover:text-teal-400"
           >
-            Print / Save as PDF
+            {t(ui.printPdf)}
           </button>
         </div>
       )}
@@ -98,11 +120,7 @@ export default function ChecklistView() {
         ))}
       </ol>
 
-      <p className="mt-10 text-sm text-slate-400 dark:text-slate-500">
-        This is general guidance based on publicly available Tamil Nadu procedures and does not
-        replace legal advice. Requirements and fees can vary by district — confirm with the
-        relevant office before relying on this list.
-      </p>
+      <p className="mt-10 text-sm text-slate-400 dark:text-slate-500">{t(ui.disclaimer)}</p>
     </main>
   );
 }
@@ -122,6 +140,7 @@ function TaskCard({
   forceOpen: boolean;
   onToggle: () => void;
 }) {
+  const { t } = useLocale();
   const [open, setOpen] = useState(false);
   const isOpen = open || forceOpen;
 
@@ -151,8 +170,8 @@ function TaskCard({
         <div className="flex-1">
           <button onClick={() => setOpen((o) => !o)} className="w-full text-left">
             <p className="text-xs font-medium uppercase tracking-wide text-slate-400 dark:text-slate-500">
-              Step {index}
-              {isBlocked && " · Waiting on an earlier step"}
+              {format(t(ui.step), { n: index })}
+              {isBlocked && t(ui.waitingOnEarlierStep)}
             </p>
             <h3
               className={`mt-0.5 text-lg font-semibold ${
@@ -161,27 +180,27 @@ function TaskCard({
                   : "text-slate-900 dark:text-slate-50"
               }`}
             >
-              {task.title}
+              {t(task.title)}
             </h3>
-            <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">{task.office}</p>
+            <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">{t(task.office)}</p>
           </button>
 
           {isOpen && (
             <div className="mt-4 flex flex-col gap-3 text-sm text-slate-700 dark:text-slate-300">
-              <p>{task.instructions}</p>
+              <p>{t(task.instructions)}</p>
 
               <div>
-                <p className="font-medium text-slate-800 dark:text-slate-100">Documents needed</p>
+                <p className="font-medium text-slate-800 dark:text-slate-100">{t(ui.documentsNeeded)}</p>
                 <ul className="mt-1 list-inside list-disc text-slate-600 dark:text-slate-300">
                   {task.documents.map((d) => (
-                    <li key={d}>{d}</li>
+                    <li key={d.en}>{t(d)}</li>
                   ))}
                 </ul>
               </div>
 
               <div className="flex flex-wrap gap-x-6 gap-y-1 text-slate-600 dark:text-slate-300">
-                <p><span className="font-medium text-slate-800 dark:text-slate-100">Fee:</span> {task.fee}</p>
-                <p><span className="font-medium text-slate-800 dark:text-slate-100">Typical timeline:</span> {task.timeline}</p>
+                <p><span className="font-medium text-slate-800 dark:text-slate-100">{t(ui.fee)}</span> {t(task.fee)}</p>
+                <p><span className="font-medium text-slate-800 dark:text-slate-100">{t(ui.typicalTimeline)}</span> {t(task.timeline)}</p>
               </div>
 
               {task.portalUrl && (
@@ -191,7 +210,9 @@ function TaskCard({
                   rel="noopener noreferrer"
                   className="w-fit text-teal-700 underline hover:text-teal-800 dark:text-teal-400 dark:hover:text-teal-300"
                 >
-                  Open {task.portalLabel ?? "official portal"} ↗
+                  {format(t(ui.openPortal), {
+                    label: task.portalLabel ? t(task.portalLabel) : t(ui.officialPortalFallback),
+                  })}
                 </a>
               )}
             </div>
@@ -202,7 +223,7 @@ function TaskCard({
               onClick={() => setOpen(true)}
               className="no-print mt-2 text-sm font-medium text-teal-700 hover:text-teal-800 dark:text-teal-400 dark:hover:text-teal-300"
             >
-              Show details →
+              {t(ui.showDetails)}
             </button>
           )}
         </div>
